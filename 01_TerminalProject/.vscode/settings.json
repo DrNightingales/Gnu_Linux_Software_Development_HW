@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "locale.h": "c",
+        "ctype.h": "c",
+        "compare": "c",
+        "vector": "c"
+    }
+}
