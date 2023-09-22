@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "locale.h": "c",
-        "ctype.h": "c",
-        "compare": "c",
-        "vector": "c"
-    },
-    "C_Cpp.default.compilerPath": "/usr/bin/gcc"
-}
