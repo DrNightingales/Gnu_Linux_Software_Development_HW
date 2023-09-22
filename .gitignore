@@ -1,6 +1,6 @@
 #Vs code
-*.vscode/
-*/.vscode/
+**/.vscode
+01_TerminalProject/.vscode/settings.json
 # Prerequisites
 *.d
 
