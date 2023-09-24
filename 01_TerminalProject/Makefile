@@ -1,4 +1,6 @@
 Show: Show.c
-	gcc Show.c -o Show -lncursesw
+	gcc $(DEBUG) Show.c -o Show -lncursesw
+debug: DEBUG = -g -Og -Wall -Wextra
+debug: Show
 clean:
-	rm -f *~ *.o Show
+	rm -f *~ *.o Show valgrind-out.txt
