@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <locale.h>
-#define DX 3
+#define DX 3U
 #define TESTFILEPATH "Lorem_Ipsum"
-
-#define WLINES (LINES - 2 * DX)
-#define WCOLS (COLS - 2 * DX)
+#define KEY_ESCAPE 27
+#define WLINES (uint64_t)(LINES - 2 * DX)
+#define WCOLS (uint64_t)(COLS - 2 * DX)
 #define min(a, b) \
     ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \
@@ -31,7 +31,6 @@ void appendchar(dynamic_string *dstr, char c);
 void appendstr(dynamic_string_array *arr, dynamic_string *dstr);
 void initstr(dynamic_string *dstr);
 void inittext(dynamic_string_array *arr);
-void printtext(dynamic_string_array *arr);
 
 void readfile(FILE *filestream, dynamic_string_array *text);
 
@@ -51,7 +50,7 @@ int main(char *argc, char *argv[])
     fclose(textfile);
 
     initscr();
-    WINDOW *win = newwin(LINES - 2 * DX, COLS - 2 * DX, DX, DX);
+    WINDOW *win = newwin(WLINES, WCOLS, DX, DX);
     move(1, 1);
     printw(filename);
     refresh();
@@ -62,9 +61,9 @@ int main(char *argc, char *argv[])
     erase();
 
     int c = 0;
-    int offsetX = 0;
-    int offsetY = 0;
-    int max_length_on_screen = 0;
+    uint64_t offsetX = 0;
+    uint64_t offsetY = 0;
+    uint64_t max_length_on_screen = 0;
     box(win, 0, 0);
 
     do // ESCAPE Key Code
@@ -72,19 +71,22 @@ int main(char *argc, char *argv[])
 
         werase(win);
 
-        wmove(win, 0, 0);
-        wprintw(win, "%d %d %d", (int64_t)text.length - offsetY, WLINES, (int64_t)text.length);
-        if (c == KEY_RIGHT && max_length_on_screen - offsetX > WCOLS)
+        if (c == KEY_RIGHT && max_length_on_screen > WCOLS + offsetX)
             offsetX += 1;
         if (c == KEY_LEFT && offsetX > 0)
             offsetX -= 1;
-        if (c == KEY_DOWN && (int64_t)text.length - offsetY > WLINES)
+        if (c == KEY_DOWN && text.length > WLINES + offsetY)
             offsetY += 1;
         if (c == KEY_UP && offsetY > 0)
             offsetY -= 1;
 
+        if (c == KEY_PPAGE && offsetY >= WLINES / 2)
+            offsetY -= WLINES / 2;
+        if ((c == KEY_NPAGE || c == ' ') && text.length > offsetY + WLINES / 2)
+            offsetY += WLINES / 2;
+
         max_length_on_screen = 0;
-        for (int i = offsetY; i < min(WLINES + offsetY, (int64_t)text.length); i++)
+        for (uint64_t i = offsetY; i < min(WLINES + offsetY, text.length); i++)
         {
             if (text.text[i]->length > max_length_on_screen)
                 max_length_on_screen = text.text[i]->length;
@@ -96,9 +98,9 @@ int main(char *argc, char *argv[])
             box(win, 0, 0);
             wrefresh(win);
         }
-    } while ((c = wgetch(win)) != 27);
+    } while ((c = wgetch(win)) != KEY_ESCAPE);
 
-    for (int i = 0; i < text.length; ++i)
+    for (uint64_t i = 0; i < text.length; ++i)
     {
         free(text.text[i]->str);
         free(text.text[i]);
@@ -179,10 +181,4 @@ void appendchar(dynamic_string *dstr, char c)
         dstr->capacity *= 2;
     }
     dstr->str[dstr->length++] = c;
-}
-void printtext(dynamic_string_array *arr)
-{
-    for (uint64_t i = 0; i < arr->length; i++)
-
-        printf("%ld. %s", i + 1, arr->text[i]->str);
 }
